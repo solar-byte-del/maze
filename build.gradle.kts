@@ -19,6 +19,7 @@ repositories {
     mavenCentral()
 }
 
+// Абсолютно точный манифест, настроенный строго на пакет com.example.maze
 tasks.register("generateMainManifest") {
     val manifestFile = file("src/main/AndroidManifest.xml")
     doLast {
@@ -29,7 +30,6 @@ tasks.register("generateMainManifest") {
     }
 }
 
-
 tasks.configureEach {
     if (name.startsWith("process") && name.contains("Manifest")) {
         dependsOn("generateMainManifest")
@@ -37,6 +37,7 @@ tasks.configureEach {
 }
 
 configure<com.android.build.gradle.AppExtension> {
+    // Везде выставляем строго com.example.maze
     namespace = "com.example.maze"
     compileSdkVersion(34)
 
