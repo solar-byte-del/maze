@@ -13,5 +13,4 @@ dependencyResolutionManagement {
     }
 }
 
-// Задаем базовое имя проекта без вложенных модулей
 rootProject.name = "MazeGame"
