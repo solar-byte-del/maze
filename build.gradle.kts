@@ -1,5 +1,3 @@
-import java.util.Base64
-
 buildscript {
     repositories {
         google()
@@ -19,14 +17,29 @@ repositories {
     mavenCentral()
 }
 
-// Идеально чистый, проверенный Base64-манифест со всеми правильными тегами
+// Прямая текстовая запись манифеста без использования Base64-кодирования
 tasks.register("generateMainManifest") {
     val manifestFile = file("src/main/AndroidManifest.xml")
     doLast {
         manifestFile.parentFile.mkdirs()
-        val encodedManifest = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KDM1YW5pZmVzdCB4bWxuczphbmRyb2lkPSJodHRwOi8vc2NoZW1hcy5hbmRyb2lkLmNvbS9hcGsvcmVzL2FuZHJvaWQiPgogICAgPGFwcGxpY2F0aW9uCiAgICAgICAgYW5kcm9pZDphbGxvd0JhY2t1cD0idHJ1ZSIKICAgICAgICBhbmRyb2lkOmxhYmVsPSJNYXplR2FtZSIKICAgICAgICBhbmRyb2lkOnN1cHBvcnRzUnRsPSJ0cnVlIj4KICAgICAgICA8YWN0aXZpdHkKICAgICAgICAgICAgYW5kcm9pZDpuYW1lPSJjb20uZXhhbXBsZS5tYXplLk1haW5BY3Rpdml0eSIKICAgICAgICAgICAgYW5kcm9pZDpleHBvcnRlZD0idHJ1ZSI+CiAgICAgICAgICAgIDxpbnRlbnQtZmlsdGVyPgogICAgICAgICAgICAgICAgPGFjdGlvbiBhbmRyb2lkOm5hbWU9ImFuZHJvaWQuaW50ZW50LmFjdGlvbi5NQUlOIiAvPgogICAgICAgICAgICAgICAgPGNhdGVnb3J5IGFuZHJvaWQ6bmFtZT0iYW5kcm9pZC5pbnRlbnQuY2F0ZWdvcnkuTEFVTkNIRVIiIC8+CiAgICAgICAgICAgIDwvaW50ZW50LWZpbHRlcj4KICAgICAgICA8L2FjdGl2aXR5PgogICAgPC9hcHBsaWNhdGlvbj4KPC9tYW5pZmVzdD4="
-        val decodedBytes = Base64.getDecoder().decode(encodedManifest)
-        manifestFile.writeBytes(decodedBytes)
+        manifestFile.writeText("""
+            <?xml version="1.0" encoding="utf-8"?>
+            <manifest xmlns:android="http://android.com">
+                <application
+                    android:allowBackup="true"
+                    android:label="MazeGame"
+                    android:supportsRtl="true">
+                    <activity
+                        android:name="com.example.maze.MainActivity"
+                        android:exported="true">
+                        <intent-filter>
+                            <action android:name="android.intent.action.MAIN" />
+                            <category android:name="android.intent.category.LAUNCHER" />
+                        </intent-filter>
+                    </activity>
+                </application>
+            </manifest>
+        """.trimIndent())
     }
 }
 
