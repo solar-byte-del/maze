@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Базовая тема, которую Android ищет при старте MainActivity -->
+    <style name="Theme.Material.NoActionBar" parent="@android:style/Theme.Material.NoActionBar">
+        <item name="android:windowBackground">#121212</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+    </style>
+</resources>
