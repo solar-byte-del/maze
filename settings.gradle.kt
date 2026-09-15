@@ -15,6 +15,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "MazeGame"
 
-// Принудительно связываем проект с корнем
+// Указываем компилятору точный путь: зайти в папку maze, а там уже лежит app
 include(":app")
-project(":app").projectDir = file(".")
+project(":app").projectDir = file("./maze/app")
