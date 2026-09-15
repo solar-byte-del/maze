@@ -155,16 +155,28 @@ class MainActivity : android.app.Activity() {
         }
         grid[rows - 1][cols - 1].isFinish = true
 
-        // Упрощенная расстановка квеста ключей/дверей
+        // Умная расстановка квеста ключей/дверей под любой размер поля
         val actualDoors = minOf(doorCount, KeyColor.values().size)
         for (i in 0 until actualDoors) {
             val color = KeyColor.values()[i]
-            // Двери ближе к финишу, ключи ближе к старту
-            grid[rows - 1 - i][cols - 1].doorColor = color
-            grid[0][i + 1].keyColor = color
+
+            // Ставим дверь на случайной строке, но строго на финишной вертикали справа
+            val doorRow = Random.nextInt(rows / 2, rows)
+            grid[doorRow][cols - 1].doorColor = color
+
+            // Прячем ключ в безопасной зоне ближе к старту (левая верхняя четверть лабиринта)
+            var keyPlaced = false
+            while (!keyPlaced) {
+                val kr = Random.nextInt(0, rows / 2)
+                val kc = Random.nextInt(0, cols / 2)
+                val cell = grid[kr][kc]
+                if (!cell.isStart && cell.keyColor == null && cell.doorColor == null) {
+                    cell.keyColor = color
+                    keyPlaced = true
+                }
+            }
         }
-        return grid
-    }
+
 }
 
 // --- КЛАСС ГРАФИКИ CANVAS И СВАЙПОВ ---
