@@ -1,5 +1,6 @@
 import java.util.Base64
 
+// 1. Скачиваем сами плагины сборщика Android
 buildscript {
     repositories {
         google()
@@ -11,9 +12,17 @@ buildscript {
     }
 }
 
+// 2. Применяем скачанные плагины
 apply(plugin = "com.android.application")
 apply(plugin = "org.jetbrains.kotlin.android")
 
+// 3. Указываем, откуда скачивать библиотеки (AndroidX, Compose) для самой игры
+repositories {
+    google()
+    mavenCentral()
+}
+
+// Автоматическая генерация манифеста лабиринта
 tasks.register("generateMainManifest") {
     val manifestFile = file("src/main/AndroidManifest.xml")
     doLast {
@@ -30,9 +39,9 @@ tasks.configureEach {
     }
 }
 
-configure<com.android.build.gradle.AppExtension> {
+android {
     namespace = "com.example.chess"
-    compileSdkVersion(34)
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.maze"
@@ -59,7 +68,6 @@ configure<com.android.build.gradle.AppExtension> {
     }
 }
 
-// Заменили прямые вызовы функций на строковые универсальные литералы "implementation"
 dependencies {
     "implementation"("androidx.core:core-ktx:1.12.0")
     "implementation"("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
