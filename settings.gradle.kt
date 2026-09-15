@@ -15,6 +15,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "MazeGame"
 
-// Указываем компилятору точный путь: зайти в папку maze, а там уже лежит app
+// Объявляем модуль приложения и принудительно заводим его в физическую папку maze/app
 include(":app")
-project(":app").projectDir = file("./maze/app")
+project(":app").projectDir = file("maze/app")
