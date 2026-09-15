@@ -1,8 +1,8 @@
 import java.util.Base64
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    id("com.android.application") version "8.3.2"
+    id("org.jetbrains.kotlin.android") version "1.9.24"
 }
 
 tasks.register("generateMainManifest") {
