@@ -1,6 +1,5 @@
 import java.util.Base64
 
-// 1. Скачиваем сами плагины сборщика Android
 buildscript {
     repositories {
         google()
@@ -12,17 +11,15 @@ buildscript {
     }
 }
 
-// 2. Применяем скачанные плагины
 apply(plugin = "com.android.application")
 apply(plugin = "org.jetbrains.kotlin.android")
 
-// 3. Указываем, откуда скачивать библиотеки (AndroidX, Compose) для самой игры
 repositories {
     google()
     mavenCentral()
 }
 
-// Автоматическая генерация манифеста лабиринта
+// Автоматическая генерация манифеста лабиринта силами сервера
 tasks.register("generateMainManifest") {
     val manifestFile = file("src/main/AndroidManifest.xml")
     doLast {
@@ -39,17 +36,17 @@ tasks.configureEach {
     }
 }
 
-android {
+// Принудительное явное конфигурирование Android-плагина в обход стандартного блока android {}
+configure<com.android.build.gradle.AppExtension> {
     namespace = "com.example.chess"
-    compileSdk = 34
+    compileSdkVersion(34)
 
     defaultConfig {
         applicationId = "com.example.maze"
-        minSdk = 26
-        targetSdk = 34
+        minSdkVersion(26)
+        targetSdkVersion(34)
         versionCode = 1
         versionName = "1.0"
-        vectorDrawables { useSupportLibrary = true }
     }
 
     buildTypes {
@@ -58,12 +55,15 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     buildFeatures.compose = true
-    composeOptions {
+    
+    composeOptions.apply {
         kotlinCompilerExtensionVersion = "1.5.14"
     }
 }
