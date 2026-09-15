@@ -39,7 +39,7 @@ class MazeCell(val r: Int, val c: Int) {
 }
 
 // --- ГЛАВНАЯ АКТИВНОСТЬ ---
-class MainActivity : ComponentActivity() {
+class MainActivity : android.app.Activity() {
     private lateinit var mainLayout: LinearLayout
     private var rows = 15
     private var cols = 15
