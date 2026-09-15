@@ -24,7 +24,7 @@ jobs:
 
     - name: Build with Gradle
       # Используем глобальную команду без двоеточий
-      run: gradle assembleDebug
+      run: gradle :app:assembleDebug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
