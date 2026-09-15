@@ -9,16 +9,12 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.activity.ComponentActivity
 import java.util.Stack
 import kotlin.math.abs
 import kotlin.random.Random
 
-// --- МОДЕЛЬ ДАННЫХ И ДВИЖОК ЛАБИРИНТА ---
+// --- МОДЕЛЬ ДАННЫХ И ЦВЕТА КВЕСТА ---
 enum class KeyColor(val label: String, val colorInt: Int) {
     RED("Красный", Color.rgb(239, 83, 80)),
     BLUE("Синий", Color.rgb(66, 165, 245)),
@@ -41,9 +37,11 @@ class MazeCell(val r: Int, val c: Int) {
 // --- ГЛАВНАЯ АКТИВНОСТЬ ---
 class MainActivity : android.app.Activity() {
     private lateinit var mainLayout: LinearLayout
-    private var rows = 15
-    private var cols = 15
-    private var doorCount = 3
+    private var rows = 11 // Начальный комфортный размер для тестов
+    private var cols = 11
+    private var doorCount = 2
+    private var isWon = false
+    private lateinit var gameView: MazeGameView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,76 +50,30 @@ class MainActivity : android.app.Activity() {
             setBackgroundColor(Color.rgb(18, 18, 18))
         }
         setContentView(mainLayout)
-        showMenu()
+        startNewGame()
     }
 
-    private fun showMenu() {
+    fun startNewGame() {
         mainLayout.removeAllViews()
-        val context = this
-
-        val title = TextView(context).apply {
-            text = "Лабиринт Квестов"
-            textColor = Color.WHITE
-            textSize = 24f
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, 50, 0, 50)
-        }
-        mainLayout.addView(title)
-
-        val inputRows = EditText(context).apply { hint = "Высота (5-99)"; setTextColor(Color.WHITE); setText("15") }
-        val inputCols = EditText(context).apply { hint = "Ширина (5-99)"; setTextColor(Color.WHITE); setText("15") }
-        val inputDoors = EditText(context).apply { hint = "Дверей (0-5)"; setTextColor(Color.WHITE); setText("3") }
-
-        mainLayout.addView(inputRows)
-        mainLayout.addView(inputCols)
-        mainLayout.addView(inputDoors)
-
-        val startBtn = Button(context).apply {
-            text = "Сгенерировать лабиринт"
-            setOnClickListener {
-                rows = inputRows.text.toString().toIntOrNull()?.coerceIn(5, 99) ?: 15
-                cols = inputCols.text.toString().toIntOrNull()?.coerceIn(5, 99) ?: 15
-                doorCount = inputDoors.text.toString().toIntOrNull()?.coerceIn(0, 5) ?: 3
-                startGame()
-            }
-        }
-        mainLayout.addView(startBtn)
-    }
-
-    private fun startGame() {
-        mainLayout.removeAllViews()
+        isWon = false
         val grid = generateMaze(rows, cols, doorCount)
-        val gameView = MazeGameView(this, grid, rows, cols) {
-            showWinScreen()
-        }
-        mainLayout.addView(gameView, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
         
-        // Кнопка возврата в меню
-        val backBtn = Button(this).apply {
-            text = "В меню"
-            setOnClickListener { showMenu() }
-        }
-        mainLayout.addView(backBtn)
+        gameView = MazeGameView(this, grid, rows, cols, 
+            onWin = { 
+                isWon = true
+                gameView.invalidate()
+            },
+            onResize = { newSize, newDoors ->
+                rows = newSize
+                cols = newSize
+                doorCount = newDoors
+                startNewGame()
+            }
+        )
+        mainLayout.addView(gameView, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
     }
 
-    private fun showWinScreen() {
-        mainLayout.removeAllViews()
-        val winText = TextView(this).apply {
-            text = "ВЫ ПРОШЛИ ЛАБИРИНТ! 🏆"
-            textColor = Color.YELLOW
-            textSize = 26f
-            gravity = android.view.Gravity.CENTER
-            setPadding(0, 100, 0, 100)
-        }
-        mainLayout.addView(winText)
-        val menuBtn = Button(this).apply {
-            text = "В главное меню"
-            setOnClickListener { showMenu() }
-        }
-        mainLayout.addView(menuBtn)
-    }
-
-    // --- АЛГОРИТМ DFS ГЕНЕРАЦИИ ---
+    // --- АЛГОРИТМ DFS ГЕНЕРАЦИИ ЛАБИРИНТА ---
     private fun generateMaze(rows: Int, cols: Int, doorCount: Int): Array<Array<MazeCell>> {
         val grid = Array(rows) { r -> Array(cols) { c -> MazeCell(r, c) } }
         val visited = Array(rows) { BooleanArray(cols) }
@@ -155,18 +107,18 @@ class MainActivity : android.app.Activity() {
         }
         grid[rows - 1][cols - 1].isFinish = true
 
-        // Умная расстановка квеста ключей/дверей под любой размер поля
+        // Безопасная расстановка квеста ключей/дверей
         val actualDoors = minOf(doorCount, KeyColor.values().size)
         for (i in 0 until actualDoors) {
             val color = KeyColor.values()[i]
-
-            // Ставим дверь на случайной строке, но строго на финишной вертикали справа
+            
             val doorRow = Random.nextInt(rows / 2, rows)
             grid[doorRow][cols - 1].doorColor = color
-
-            // Прячем ключ в безопасной зоне ближе к старту (левая верхняя четверть лабиринта)
+            
             var keyPlaced = false
-            while (!keyPlaced) {
+            var attempts = 0
+            while (!keyPlaced && attempts < 100) {
+                attempts++
                 val kr = Random.nextInt(0, rows / 2)
                 val kc = Random.nextInt(0, cols / 2)
                 val cell = grid[kr][kc]
@@ -176,35 +128,41 @@ class MainActivity : android.app.Activity() {
                 }
             }
         }
-
+        return grid
+    }
 }
 
-// --- КЛАСС ГРАФИКИ CANVAS И СВАЙПОВ ---
+// --- ЧИСТЫЙ ЭКРАН ИГРЫ НА CANVAS ---
 class MazeGameView(
     context: Context, 
     private val maze: Array<Array<MazeCell>>, 
     private val rows: Int, 
     private val cols: Int,
-    private val onWin: () -> Unit
+    private val onWin: () -> Unit,
+    private val onResize: (Int, Int) -> Unit
 ) : View(context) {
 
     private var player = Point(0, 0)
     private val inventory = mutableListOf<KeyColor>()
     private val openedDoors = mutableListOf<KeyColor>()
+    private var isGameFinished = false
     
-    private val wallPaint = Paint().apply { color = Color.WHITE; strokeWidth = 5f }
-    private val startPaint = Paint().apply { color = Color.argb(60, 0, 255, 0) }
-    private val finishPaint = Paint().apply { color = Color.argb(60, 255, 0, 0) }
+    private val wallPaint = Paint().apply { color = Color.WHITE; strokeWidth = 6f }
+    private val startPaint = Paint().apply { color = Color.argb(70, 0, 255, 0) }
+    private val finishPaint = Paint().apply { color = Color.argb(70, 255, 0, 0) }
     private val playerPaint = Paint().apply { color = Color.rgb(41, 182, 246) }
+    private val textPaint = Paint().apply { color = Color.WHITE; textSize = 40f; isAntiAlias = true }
+    private val btnPaint = Paint().apply { color = Color.DKGRAY }
 
     private val gestureDetector = GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
         override fun onFling(e1: MotionEvent?, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+            if (isGameFinished) return false
             val diffX = e2.x - (e1?.x ?: 0f)
             val diffY = e2.y - (e1?.y ?: 0f)
             if (abs(diffX) > abs(diffY)) {
-                if (abs(diffX) > 100) { if (diffX > 0) movePlayer(0, 1) else movePlayer(0, -1) }
+                if (abs(diffX) > 80) { if (diffX > 0) movePlayer(0, 1) else movePlayer(0, -1) }
             } else {
-                if (abs(diffY) > 100) { if (diffY > 0) movePlayer(1, 0) else movePlayer(-1, 0) }
+                if (abs(diffY) > 80) { if (diffY > 0) movePlayer(1, 0) else movePlayer(-1, 0) }
             }
             return true
         }
@@ -233,23 +191,45 @@ class MazeGameView(
                 }
                 player = Point(nr, nc)
                 targetCell.keyColor?.let { inventory.add(it); targetCell.keyColor = null }
-                invalidate() // Перерисовать холст Canvas
-                if (targetCell.isFinish) onWin()
+                invalidate()
+                if (targetCell.isFinish) {
+                    isGameFinished = true
+                    onWin()
+                }
             }
         }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         gestureDetector.onTouchEvent(event)
+        
+        if (event.action == MotionEvent.ACTION_DOWN) {
+            val ex = event.x
+            val ey = event.y
+            val h = height.toFloat()
+
+            // Зоны кликов по графическим кнопкам в самом низу Canvas
+            if (ey > h - 180 && ey < h - 40) {
+                if (ex > 20 && ex < 220) onResize(5, 1)     // Маленький 5х5, 1 дверь
+                if (ex > 240 && ex < 440) onResize(15, 3)   // Средний 15х15, 3 двери
+                if (ex > 460 && ex < 660) onResize(30, 5)   // Большой 30х30, 5 дверей
+                if (isGameFinished && ex > 680) (context as MainActivity).startNewGame() // Кнопка заново
+            }
+        }
         return true
     }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        val cellSize = minOf(width / cols.toFloat(), height / rows.toFloat())
-        val offsetX = (width - cellSize * cols) / 2
-        val offsetY = (height - cellSize * rows) / 2
+        canvas.drawColor(Color.rgb(18, 18, 18))
 
+        // Оставляем снизу 200 пикселей под наши графические кнопки управления размером
+        val usableHeight = height - 220f
+        val cellSize = minOf(width / cols.toFloat(), usableHeight / rows.toFloat())
+        val offsetX = (width - cellSize * cols) / 2
+        val offsetY = (usableHeight - cellSize * rows) / 2
+
+        // Отрисовка сетки лабиринта
         for (r in 0 until rows) {
             for (c in 0 until cols) {
                 val cell = maze[r][c]
@@ -261,11 +241,14 @@ class MazeGameView(
                 
                 cell.keyColor?.let {
                     val p = Paint().apply { color = it.colorInt }
-                    canvas.drawCircle(x + cellSize/2, y + cellSize/2, cellSize/4, p)
+                    canvas.drawCircle(x + cellSize/2, y + cellSize/2, cellSize/5, p)
                 }
                 
                 cell.doorColor?.let {
                     if (!openedDoors.contains(it)) {
                         val p = Paint().apply { color = it.colorInt }
-                        canvas.drawRect(x + cellSize*0.1f, y + cellSize*0.1f, x + cellSize*0.9f, y + cellSize*0.9f, p)
-}}if (cell.hasTopWall) canvas.drawLine(x, y, x + cellSize, y, wallPaint)if (cell.hasLeftWall) canvas.drawLine(x, y, x, y + cellSize, wallPaint)}}val px = offsetX + player.c * cellSize + cellSize / 2val py = offsetY + player.r * cellSize + cellSize / 2canvas.drawCircle(px, py, cellSize / 3, playerPaint)}}
+                        canvas.drawRect(x + cellSize*0.15f, y + cellSize*0.15f, x + cellSize*0.85f, y + cellSize*0.85f, p)
+                    }
+                }
+
+if (cell.hasTopWall) canvas.drawLine(x, y, x + cellSize, y, wallPaint)if (cell.hasLeftWall) canvas.drawLine(x, y, x, y + cellSize, wallPaint)}}// Внешние рамки краевcanvas.drawLine(offsetX, offsetY + rows * cellSize, offsetX + cols * cellSize, offsetY + rows * cellSize, wallPaint)canvas.drawLine(offsetX + cols * cellSize, offsetY, offsetX + cols * cellSize, offsetY + rows * cellSize, wallPaint)// Игрокval px = offsetX + player.c * cellSize + cellSize / 2val py = offsetY + player.r * cellSize + cellSize / 2canvas.drawCircle(px, py, cellSize / 3.5f, playerPaint)// ИНТЕРФЕЙС И ГРАФИЧЕСКИЕ КНОПКИ В САМОМ НИЗУ ЭКРАНАval h = height.toFloat()// Информация о собранных ключахcanvas.drawText("Ключей в кармане: ${inventory.size}", 40f, h - 240f, textPaint)if (isGameFinished) {val winPaint = Paint().apply { color = Color.YELLOW; textSize = 50f; fontWeight = FontWeight.BOLD }canvas.drawText("ПОБЕДА! 🏆", width / 2f - 120f, h - 240f, winPaint)}// Рисуем кнопки-квадраты прямо на холстеcanvas.drawRect(20f, h - 180f, 220f, h - 40f, btnPaint)canvas.drawText("5 x 5", 65f, h - 95f, textPaint)canvas.drawRect(240f, h - 180f, 440f, h - 40f, btnPaint)canvas.drawText("15x15", 275f, h - 95f, textPaint)canvas.drawRect(460f, h - 180f, 660f, h - 40f, btnPaint)canvas.drawText("30x30", 495f, h - 95f, textPaint)if (isGameFinished) {val activeBtn = Paint().apply { color = Color.rgb(76, 175, 80) }canvas.drawRect(680f, h - 180f, width - 20f, h - 40f, activeBtn)canvas.drawText("ЗАНОВО", 700f, h - 95f, textPaint)}}}
