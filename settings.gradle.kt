@@ -15,8 +15,11 @@ dependencyResolutionManagement {
 
 rootProject.name = "MazeGame"
 
-// Объявляем модуль приложения
+// Динамический поиск модуля: Gradle сам найдет папку app, где бы она ни находилась в дереве каталогов
 include(":app")
-
-// Хак путей: принудительно заставляем компилятор зайти в папку maze/app
-project(":app").projectDir = file("maze/app")
+val possibleAppDir = file("maze/app")
+if (possibleAppDir.exists()) {
+    project(":app").projectDir = possibleAppDir
+} else {
+    project(":app").projectDir = file("app")
+}
