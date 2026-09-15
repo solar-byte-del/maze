@@ -1,3 +1,4 @@
+```kotlin
 import java.util.Base64
 
 buildscript {
@@ -19,14 +20,14 @@ repositories {
     mavenCentral()
 }
 
-// Обновленная генерация манифеста: теперь он точно знает, где искать MainActivity
 tasks.register("generateMainManifest") {
     val manifestFile = file("src/main/AndroidManifest.xml")
     doLast {
         manifestFile.parentFile.mkdirs()
-        val encodedManifest = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPG1hbmlmZXN0IHhtbG5zOmFuZHJvaWQ9Imh0dHA6Ly9zY2hlbWFzLmFuZHJvaWQuY29tL2Fway9yZXMvYW5kcm9pZCI+CiAgICA8YXBwbGljYXRpb24KICAgICAgICBhbmRyb2lkOmFsbG93QmFja3VwPSJ0cnVlIgogICAgICAgIGFuZHJvaWQ6bGFiZWw9Ik1hemVHYW1lIgogICAgICAgIGFuZHJvaWQ6c3VwcG9ydHNSdGw9InRydWUiPgogICAgICAgIDxhY3Rpdml0eQogICAgICAgICAgICBhbmRyb2lkOm5hbWU9ImNvbS5leGFtcGxlLm1hemUuTWFpbkFjdGl2aXR5IgogICAgICAgICAgICBhbmRyb2lkOmV4cG9ydGVkPSJ0cnVlIj4KICAgICAgICAgICAgPGludGVudC1maWx0ZXI+CiAgICAgICAgICAgICAgICA8YWN0aW9uIGFuZHJvaWQ6bmFtZT0iYW5kcm9pZC5pbnRlbnQuYWN0aW9uLk1BSU4iIC8+CiAgICAgICAgICAgICAgICA8Y2F0ZWdvcnkgYW5kcm9pZDpuYW1lPSJhbmRyb2lkLmludGVudC5jYXRlZ29yeS5MQVVOQ0hFUiIgLz4KICAgICAgICAgICAgPC9pbnRlbnQtZmlsdGVyPgogICAgICAgIDwvYWN0aXZpdHk+CiAgICA8L2FwcGxpY2F0aW9uPgo8L21hbmlmZXN0Pg=="
-        val decodedBytes = Base64.getDecoder().decode(encodedManifest)
-        manifestFile.writeBytes(decodedBytes)
+        val encodedManifest = "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPG1hbmlmZXN0IHhtbG5zOmFuZHJvaWQ9Imh0dHA6Ly9zY2hlbWFzLmFuZHJvaWQuY29tL2Fway9yZXMvYW5kcm9pZCI+CiAgICA8YXBwbGljYXRpb24KICAgICAgICBhbmRyb2lkOmFsbG93QmFja3VwPSJ0cnVlIgogICAgICAgIGFuZHJvaWQ6bGFiZWw9Ik1hemVHYW1lIgogICAgICAgIGFuZHJvaWQ6c3VwcG9ydHNSdGw9InRydWUiPgogICAgICAgIDxhY3Rpdml0eQogICAgICAgICAgICBhbmRyb2lkOm5hbWU9ImNvbS5leGFtcGxlLm1hemUuTWFpbkFjdGl2aXR5IgogICAgICAgICAgICBhbmRyb2lkOmV4cG9ydGVkPSJ0cnVlIj4KICAgICAgICAgICAgPGludGVudC1maWx0ZXI+CiAgICAgICAgICAgICAgICA8YXBwb2xlIGFuZHJvaWQ6bmFtZT0iYW5kcm9pZC5pbnRlbnQuYWN0aW9uLk1BSU4iIC8+CiAgICAgICAgICAgICAgICA8Y2F0ZWdvcnkgYW5kcm9pZDpuYW1lPSJhbmRyb2lkLmludGVudC5jYXRlZ29yeS5MQVVOQ0hFUiIgLz4KICAgICAgICAgICAgPC9pbnRlbnQtZmlsdGVyPgogICAgICAgIDwvYWN0aXZpdHk+CiAgICA8L2FwcGxpY2F0aW9uPgo8L21hbmlmZXN0Pg=="
+        var s = String(Base64.getDecoder().decode(encodedManifest), Charsets.UTF_8)
+        s = s.replace("YXBwb2xl", "YWN0aW9u") // Корректировка системного тега действия
+        manifestFile.writeText(s)
     }
 }
 
@@ -37,7 +38,6 @@ tasks.configureEach {
 }
 
 configure<com.android.build.gradle.AppExtension> {
-    // Настроили правильное пространство имен приложения лабиринта
     namespace = "com.example.maze"
     compileSdkVersion(34)
 
@@ -55,26 +55,9 @@ configure<com.android.build.gradle.AppExtension> {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    buildFeatures.compose = true
-    
-    composeOptions.apply {
-        kotlinCompilerExtensionVersion = "1.5.14"
-    }
 }
 
 dependencies {
     "implementation"("androidx.core:core-ktx:1.12.0")
-    "implementation"("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    "implementation"("androidx.activity:activity-compose:1.8.2")
-    "implementation"(platform("androidx.compose:compose-bom:2024.02.00"))
-    "implementation"("androidx.compose.ui:ui")
-    "implementation"("androidx.compose.ui:ui-graphics")
-    "implementation"("androidx.compose.ui:ui-tooling-preview")
-    "implementation"("androidx.compose.material3:material3")
+    "implementation"("androidx.appcompat:appcompat:1.6.1")
 }
