@@ -1,11 +1,22 @@
 import java.util.Base64
 
-plugins {
-    id("com.android.application") version "8.3.2"
-    id("org.jetbrains.kotlin.android") version "1.9.24"
+// Сначала принудительно скачиваем плагины через проверенный buildscript
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.3.2")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")
+    }
 }
 
-// Прямая генерация манифеста лабиринта в корневую память сборщика
+// Теперь применяем уже скачанные из репозиториев Google плагины
+apply(plugin = "com.android.application")
+apply(plugin = "org.jetbrains.kotlin.android")
+
+// Автоматическая генерация манифеста лабиринта силами сервера
 tasks.register("generateMainManifest") {
     val manifestFile = file("src/main/AndroidManifest.xml")
     doLast {
@@ -16,16 +27,16 @@ tasks.register("generateMainManifest") {
     }
 }
 
+// Привязываем инъекцию манифеста к старту компиляции
 tasks.configureEach {
     if (name.startsWith("process") && name.contains("Manifest")) {
         dependsOn("generateMainManifest")
     }
 }
 
-android {
-    // Указываем компилятору пространство имен напрямую в корне
+configure<com.android.build.gradle.AppExtension> {
     namespace = "com.example.chess"
-    compileSdk = 34
+    compileSdkVersion(34)
 
     defaultConfig {
         applicationId = "com.example.maze"
@@ -37,7 +48,7 @@ android {
     }
 
     buildTypes {
-        release {
+        getByName("release") {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
@@ -46,12 +57,14 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions { jvmTarget = "17" }
-    buildFeatures { compose = true }
-    composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
+    buildFeatures.compose = true
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
 }
 
 dependencies {
+    // Подключаем стандартные AndroidX и Jetpack Compose библиотеки
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
