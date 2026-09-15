@@ -13,13 +13,5 @@ dependencyResolutionManagement {
     }
 }
 
+// Задаем базовое имя проекта без вложенных модулей
 rootProject.name = "MazeGame"
-
-// Динамический поиск модуля: Gradle сам найдет папку app, где бы она ни находилась в дереве каталогов
-include(":app")
-val possibleAppDir = file("maze/app")
-if (possibleAppDir.exists()) {
-    project(":app").projectDir = possibleAppDir
-} else {
-    project(":app").projectDir = file("app")
-}
