@@ -1,6 +1,5 @@
 import java.util.Base64
 
-// Сначала принудительно скачиваем плагины через проверенный buildscript
 buildscript {
     repositories {
         google()
@@ -12,11 +11,9 @@ buildscript {
     }
 }
 
-// Теперь применяем уже скачанные из репозиториев Google плагины
 apply(plugin = "com.android.application")
 apply(plugin = "org.jetbrains.kotlin.android")
 
-// Автоматическая генерация манифеста лабиринта силами сервера
 tasks.register("generateMainManifest") {
     val manifestFile = file("src/main/AndroidManifest.xml")
     doLast {
@@ -27,7 +24,6 @@ tasks.register("generateMainManifest") {
     }
 }
 
-// Привязываем инъекцию манифеста к старту компиляции
 tasks.configureEach {
     if (name.startsWith("process") && name.contains("Manifest")) {
         dependsOn("generateMainManifest")
@@ -63,14 +59,14 @@ configure<com.android.build.gradle.AppExtension> {
     }
 }
 
+// Заменили прямые вызовы функций на строковые универсальные литералы "implementation"
 dependencies {
-    // Подключаем стандартные AndroidX и Jetpack Compose библиотеки
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
-    implementation("androidx.activity:activity-compose:1.8.2")
-    implementation(platform("androidx.compose:compose-bom:2024.02.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
+    "implementation"("androidx.core:core-ktx:1.12.0")
+    "implementation"("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    "implementation"("androidx.activity:activity-compose:1.8.2")
+    "implementation"(platform("androidx.compose:compose-bom:2024.02.00"))
+    "implementation"("androidx.compose.ui:ui")
+    "implementation"("androidx.compose.ui:ui-graphics")
+    "implementation"("androidx.compose.ui:ui-tooling-preview")
+    "implementation"("androidx.compose.material3:material3")
 }
