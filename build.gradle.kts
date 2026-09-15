@@ -1,4 +1,3 @@
-```kotlin
 import java.util.Base64
 
 buildscript {
