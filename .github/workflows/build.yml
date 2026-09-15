@@ -28,10 +28,5 @@ jobs:
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-            - name: Upload APK
-      uses: actions/upload-artifact@v4
-      with:
         name: app-debug
-        # Звёздочки заставят облачный компьютер самостоятельно найти скомпилированный APK в любой папке проекта
         path: "**/build/outputs/apk/debug/*.apk"
-
