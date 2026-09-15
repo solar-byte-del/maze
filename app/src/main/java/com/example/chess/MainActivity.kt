@@ -1,4 +1,4 @@
-package com.example.chess
+package com.example.maze.
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
