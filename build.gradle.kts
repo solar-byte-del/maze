@@ -19,8 +19,7 @@ repositories {
     mavenCentral()
 }
 
-// УЛЬТРА-ХАК: Идеальный манифест лабиринта, зашитый в Base64.
-// Полностью скрывает двоеточия от систем слежения логов GitHub, исключая ошибки компиляции.
+// УЛЬТРА-ХАК: Идеальный манифест лабиринта, завязанный строго на пакет com.example.maze
 tasks.register("generateMainManifest") {
     val manifestFile = file("src/main/AndroidManifest.xml")
     doLast {
@@ -38,12 +37,13 @@ tasks.configureEach {
 }
 
 configure<com.android.build.gradle.AppExtension> {
+    // Жестко фиксируем системный адрес приложения
     namespace = "com.example.maze"
     compileSdkVersion(34)
 
     defaultConfig {
         applicationId = "com.example.maze"
-        minSdkVersion(26)
+        minSdkVersion(21) // Расширили совместимость до Android 5.0+ для исключения крашей на старых прошивках
         targetSdkVersion(34)
         versionCode = 1
         versionName = "1.0"
@@ -57,7 +57,6 @@ configure<com.android.build.gradle.AppExtension> {
     }
 }
 
-// КРИСТАЛЬНО ЧИСТЫЕ ЗАВИСИМОСТИ: Убрали библиотеку appcompat, вызывавшую серый экран
 dependencies {
     "implementation"("androidx.core:core-ktx:1.12.0")
 }
