@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Сделали схему Android базовой по умолчанию, убрав необходимость писать двоеточия -->
-<manifest xmlns="http://android.com">
+<manifest xmlns&#58;android="http://android.com">
     <application
-        allowBackup="true"
-        label="MazeGame"
-        theme="@style/Theme.AppCompat.Light.NoActionBar"
-        supportsRtl="true">
-        
+        android&#58;allowBackup="true"
+        android&#58;label="MazeGame"
+        android&#58;theme="@android&#58;style/Theme.NoTitleBar"
+        android&#58;supportsRtl="true">
         <activity
-            name="com.example.maze.MainActivity"
-            exported="true">
+            android&#58;name="com.example.maze.MainActivity"
+            android&#58;exported="true">
             <intent-filter>
-                <action name="android.intent.action.MAIN" />
-                <category name="android.intent.category.LAUNCHER" />
+                <action android&#58;name="android.intent.action.MAIN" />
+                <category android&#58;name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
     </application>
 </manifest>
