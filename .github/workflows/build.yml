@@ -49,15 +49,19 @@ jobs:
         zip -u app-debug.apk AndroidManifest.xml
 
     - name: Sign APK for Android 16 Compatibility
-      # Генерируем доверенный цифровой ключ и подписываем APK-файл утилитой apksigner
+      # Автоматический поиск точного адреса apksigner в недрах установленного Android SDK
       run: |
         cd app/build/outputs/apk/debug
         keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-        apksigner sign --ks debug.keystore --ks-pass pass:android --out maze-game-signed.apk app-debug.apk
+        
+        # Находим самый свежий apksigner в системе сборки
+        APKSIGNER_PATH=$(find /usr/local/lib/android/sdk/build-tools/ -name apksigner | sort -V | tail -n 1)
+        
+        # Подписываем игру
+        $APKSIGNER_PATH sign --ks debug.keystore --ks-pass pass:android --out maze-game-signed.apk app-debug.apk
 
     - name: Upload Signed APK
       uses: actions/upload-artifact@v4
       with:
         name: maze-game
-        # Загружаем только один, строго подписанный и готовый к запуску файл
         path: app/build/outputs/apk/debug/maze-game-signed.apk
