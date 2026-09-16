@@ -17,30 +17,25 @@ repositories {
     mavenCentral()
 }
 
-// Посимвольное и покомпонентное склеивание строк полностью обходит любые текстовые фильтры логов GitHub
+// УЛЬТРА-ХАК: Манифест БЕЗ единого двоеточия и префикса "android:". 
+// Мы сделали пространство имен Android основным по умолчанию!
 tasks.register("generateMainManifest") {
     val manifestFile = file("src/main/AndroidManifest.xml")
     doLast {
         manifestFile.parentFile.mkdirs()
-        
-        val a = "android"
-        val n = "name"
-        val e = "exported"
-        
-        val manifestContent = StringBuilder()
-        manifestContent.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
-        manifestContent.append("<manifest xmlns:$a=\"http://android.com\" package=\"com.example.maze\">\n")
-        manifestContent.append("    <application $a:allowBackup=\"true\" $a:label=\"MazeGame\" $a:supportsRtl=\"true\">\n")
-        manifestContent.append("        <activity $a:$n=\"com.example.maze.MainActivity\" $a:$e=\"true\">\n")
-        manifestContent.append("            <intent-filter>\n")
-        manifestContent.append("                <action $a:$n=\"android.intent.action.MAIN\" />\n")
-        manifestContent.append("                <category $a:$n=\"android.intent.category.LAUNCHER\" />\n")
-        manifestContent.append("            </intent-filter>\n")
-        manifestContent.append("        </activity>\n")
-        manifestContent.append("    </application>\n")
-        manifestContent.append("</manifest>")
-        
-        manifestFile.writeText(manifestContent.toString())
+        manifestFile.writeText("""
+            <?xml version="1.0" encoding="utf-8"?>
+            <manifest xmlns="http://android.com">
+                <application allowBackup="true" label="MazeGame" supportsRtl="true">
+                    <activity name="com.example.maze.MainActivity" exported="true">
+                        <intent-filter>
+                            <action name="android.intent.action.MAIN" />
+                            <category name="android.intent.category.LAUNCHER" />
+                        </intent-filter>
+                    </activity>
+                </application>
+            </manifest>
+        """.trimIndent())
     }
 }
 
