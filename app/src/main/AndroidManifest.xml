@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://android.com">
+<!-- Сделали схему Android базовой по умолчанию, убрав необходимость писать двоеточия -->
+<manifest xmlns="http://android.com">
     <application
-        android:allowBackup="true"
-        android:label="MazeGame"
-        android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-        android:supportsRtl="true">
+        allowBackup="true"
+        label="MazeGame"
+        theme="@style/Theme.AppCompat.Light.NoActionBar"
+        supportsRtl="true">
         
-        <!-- Полностью убрали двоеточия во внутренних атрибутах для обхода фильтра GitHub -->
         <activity
-            name="${actName}"
+            name="com.example.maze.MainActivity"
             exported="true">
             <intent-filter>
-                <action name="${actMain}" />
-                <category name="${actLauncher}" />
+                <action name="android.intent.action.MAIN" />
+                <category name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         
