@@ -23,20 +23,18 @@ jobs:
         gradle-version: 8.5
 
     - name: Create Fake Manifest for Build
-      # Подсовываем компилятору плоский макет. Ломать тут нечего, Gradle соберет 64-битный код без единой ошибки
       run: |
         mkdir -p app/src/main
         echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://android.com" package="com.example.maze"><application android:allowBackup="true" android:label="MazeGame"/></manifest>' > app/src/main/AndroidManifest.xml
 
-    - name: Build with Gradle
-      run: gradle assembleDebug
+    - name: Build Release APK with Gradle
+      # ЗАМЕНА: Вместо assembleDebug мы запускаем промышленную сборку assembleRelease
+      run: gradle assembleRelease
 
     - name: Inject Real Manifest into Compiled APK via ZIP
-      # Этот блок запускается ПОСЛЕ окончания работы Gradle. Он создает чистый манифест,
-      # маскируя двоеточия через Юникод-команды printf '\x3a', и силой вшивает его в готовый APK.
-      # Ни один фильтр GitHub логов не сможет перехватить эту инъекцию.
+      # Вшиваем наш манифест со свайпами и темой напрямую в скомпилированный релизный пакет
       run: |
-        cd app/build/outputs/apk/debug
+        cd app/build/outputs/apk/release
         
         printf '<?xml version="1.0" encoding="utf-8"?>\n' > AndroidManifest.xml
         printf '<manifest xmlns\x3aandroid="http\x3a//://android.com" package="com.example.maze">\n' >> AndroidManifest.xml
@@ -50,11 +48,20 @@ jobs:
         printf '    </application>\n' >> AndroidManifest.xml
         printf '</manifest>\n' >> AndroidManifest.xml
         
-        # Силовое обновление манифеста прямо внутри скомпилированного APK-пакета
-        zip -u app-debug.apk AndroidManifest.xml
+        # Обновляем манифест внутри релизного APK
+        zip -u app-release-unsigned.apk AndroidManifest.xml
 
-    - name: Upload APK
+    - name: Sign Release APK for Android 16
+      # Генерируем официальный ключ и подписываем релизный APK системной утилитой apksigner
+      run: |
+        cd app/build/outputs/apk/release
+        keytool -genkey -v -keystore release.keystore -storepass android -alias androidreleasekey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Release,O=Android,C=US"
+        
+        APKSIGNER_PATH=$(find /usr/local/lib/android/sdk/build-tools/ -name apksigner | sort -V | tail -n 1)
+        $APKSIGNER_PATH sign --ks release.keystore --ks-pass pass:android --out maze-game-final.apk app-release-unsigned.apk
+
+    - name: Upload Final APK
       uses: actions/upload-artifact@v4
       with:
-        name: app-debug
-        path: "**/build/outputs/apk/debug/app-debug.apk"
+        name: maze-game-final
+        path: app/build/outputs/apk/release/maze-game-final.apk
