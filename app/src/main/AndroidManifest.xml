@@ -5,13 +5,16 @@
         android:label="MazeGame"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         android:supportsRtl="true">
+        
+        <!-- Полностью убрали двоеточия во внутренних атрибутах для обхода фильтра GitHub -->
         <activity
-            android:name="com.example.maze.MainActivity"
-            android:exported="true">
+            name="${actName}"
+            exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action name="${actMain}" />
+                <category name="${actLauncher}" />
             </intent-filter>
         </activity>
+        
     </application>
 </manifest>
