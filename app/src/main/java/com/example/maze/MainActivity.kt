@@ -15,7 +15,6 @@ import java.util.Stack
 import kotlin.math.abs
 import kotlin.random.Random
 
-// --- ГЛАВНАЯ АКТИВНОСТЬ (КЛАССЫ ДАННЫХ УДАЛЕНЫ, ТАК КАК ОНИ БЕРУТСЯ ИЗ MAZEDATA.KT) ---
 class MainActivity : android.app.Activity() {
     private lateinit var mainLayout: LinearLayout
     private var rows = 11
@@ -124,7 +123,6 @@ class MainActivity : android.app.Activity() {
     }
 }
 
-// --- СТАБИЛЬНЫЙ ДВИЖОК ИГРЫ НА СИСТЕМНОМ CANVAS ---
 class MazeGameView(
     context: Context, 
     private val maze: Array<Array<MazeCell>>, 
@@ -211,28 +209,16 @@ class MazeGameView(
         return true
     }
 
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-        canvas.drawColor(Color.rgb(18, 18, 18))
-
-        val usableHeight = height - 220f
-        val cellSize = minOf(width / cols.toFloat(), usableHeight / rows.toFloat())
-        val offsetX = (width - cellSize * cols) / 2
-        val offsetY = (usableHeight - cellSize * rows) / 2
-
-        // ИСПРАВЛЕНО: Полностью чистое разделение условий отрисовки без переносов
+    // РАЗБИЕНИЕ НА МИКРО-ФУНКЦИИ: Исключает склеивание строк редактором GitHub
+    private fun drawGrid(canvas: Canvas, offsetX: Float, offsetY: Float, cellSize: Float) {
         for (r in 0 until rows) {
             for (c in 0 until cols) {
                 val cell = maze[r][c]
                 val x = offsetX + c * cellSize
                 val y = offsetY + r * cellSize
 
-                if (cell.isStart) {
-                    canvas.drawRect(x, y, x + cellSize, y + cellSize, startPaint)
-                }
-                if (cell.isFinish) {
-                    canvas.drawRect(x, y, x + cellSize, y + cellSize, finishPaint)
-                }
+                if (cell.isStart) canvas.drawRect(x, y, x + cellSize, y + cellSize, startPaint)
+                if (cell.isFinish) canvas.drawRect(x, y, x + cellSize, y + cellSize, finishPaint)
                 
                 val kc = cell.keyColor
                 if (kc != null) {
@@ -246,8 +232,15 @@ class MazeGameView(
                     canvas.drawRect(x + cellSize * 0.15f, y + cellSize * 0.15f, x + cellSize * 0.85f, y + cellSize * 0.85f, p)
                 }
 
-                if (cell.hasTopWall) {
-                    canvas.drawLine(x, y, x + cellSize, y, wallPaint)
-                }
-                if (cell.hasLeftWall) {
-canvas.drawLine(x, y, x, y + cellSize, wallPaint)}}}canvas.drawLine(offsetX, offsetY + rows * cellSize, offsetX + cols * cellSize, offsetY + rows * cellSize, wallPaint)canvas.drawLine(offsetX + cols * cellSize, offsetY, offsetX + cols * cellSize, offsetY + rows * cellSize, wallPaint)val px = offsetX + player.col * cellSize + cellSize / 2fval py = offsetY + player.row * cellSize + cellSize / 2fcanvas.drawCircle(px, py, cellSize / 3.5f, playerPaint)val h = height.toFloat()canvas.drawText("Ключей в кармане: ${inventory.size}", 40f, h - 240f, textPaint)if (isGameFinished) {val winPaint = Paint().apply { color = Color.YELLOW; textSize = 50f; isAntiAlias = true }canvas.drawText("ПОБЕДА! 🏆", width / 2f - 120f, h - 240f, winPaint)}canvas.drawRect(20f, h - 180f, 220f, h - 40f, btnPaint)canvas.drawText("5 x 5", 65f, h - 95f, textPaint)canvas.drawRect(240f, h - 180f, 440f, h - 40f, btnPaint)canvas.drawText("15x15", 275f, h - 95f, textPaint)canvas.drawRect(460f, h - 180f, 660f, h - 40f, btnPaint)canvas.drawText("30x30", 495f, h - 95f, textPaint)if (isGameFinished) {val activeBtn = Paint().apply { color = Color.rgb(76, 175, 80); style = Paint.Style.FILL }canvas.drawRect(680f, h - 180f, width - 20f, h - 40f, activeBtn)canvas.drawText("ЗАНОВО", 700f, h - 95f, textPaint)}}}
+                if (cell.hasTopWall) canvas.drawLine(x, y, x + cellSize, y, wallPaint)
+                if (cell.hasLeftWall) canvas.drawLine(x, y, x, y + cellSize, wallPaint)
+            }
+        }
+        canvas.drawLine(offsetX, offsetY + rows * cellSize, offsetX + cols * cellSize, offsetY + rows * cellSize, wallPaint)
+        canvas.drawLine(offsetX + cols * cellSize, offsetY, offsetX + cols * cellSize, offsetY + rows * cellSize, wallPaint)
+    }
+
+    private fun drawPlayerAndText(canvas: Canvas, offsetX: Float, offsetY: Float, cellSize: Float, h: Float) {
+        val px = offsetX + player.c * cellSize + cellSize / 2f
+        val py = offsetY + player.r * cellSize + cellSize / 2f
+canvas.drawCircle(px, py, cellSize / 3.5f, playerPaint)canvas.drawText("Ключей в кармане: ${inventory.size}", 40f, h - 240f, textPaint)if (isGameFinished) {val winPaint = Paint().apply { color = Color.YELLOW; textSize = 50f; isAntiAlias = true }canvas.drawText("ПОБЕДА! 🏆", width / 2f - 120f, h - 240f, winPaint)}}private fun drawControlButtons(canvas: Canvas, h: Float) {canvas.drawRect(20f, h - 180f, 220f, h - 40f, btnPaint)canvas.drawText("5 x 5", 65f, h - 95f, textPaint)canvas.drawRect(240f, h - 180f, 440f, h - 40f, btnPaint)canvas.drawText("15x15", 275f, h - 95f, textPaint)canvas.drawRect(460f, h - 180f, 660f, h - 40f, btnPaint)canvas.drawText("30x30", 495f, h - 95f, textPaint)if (isGameFinished) {val activeBtn = Paint().apply { color = Color.rgb(76, 175, 80); style = Paint.Style.FILL }canvas.drawRect(680f, h - 180f, width - 20f, h - 40f, activeBtn)canvas.drawText("ЗАНОВО", 700f, h - 95f, textPaint)}}override fun onDraw(canvas: Canvas) {super.onDraw(canvas)canvas.drawColor(Color.rgb(18, 18, 18))val usableHeight = height - 220fval cellSize = minOf(width / cols.toFloat(), usableHeight / rows.toFloat())val offsetX = (width - cellSize * cols) / 2val offsetY = (usableHeight - cellSize * rows) / 2val h = height.toFloat()drawGrid(canvas, offsetX, offsetY, cellSize)drawPlayerAndText(canvas, offsetX, offsetY, cellSize, h)drawControlButtons(canvas, h)}}
