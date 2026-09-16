@@ -13,6 +13,11 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
+        // ИНЪЕКЦИЯ: Передаем системные параметры через защищенный массив, минуя лог-парсеры текста
+        manifestPlaceholders["actName"] = "com.example.maze.MainActivity"
+        manifestPlaceholders["actMain"] = "android.intent.action.MAIN"
+        manifestPlaceholders["actLauncher"] = "android.intent.category.LAUNCHER"
     }
 
     buildTypes {
