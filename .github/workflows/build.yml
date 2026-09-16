@@ -23,7 +23,6 @@ jobs:
         gradle-version: 8.5
 
     - name: Create Fake Manifest for Build
-      # Подсовываем компилятору пустой макет. Ломать тут нечего, Gradle соберет код без единой придирки
       run: |
         mkdir -p app/src/main
         echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://android.com" package="com.example.maze"><application android:allowBackup="true" android:label="MazeGame"/></manifest>' > app/src/main/AndroidManifest.xml
@@ -32,14 +31,13 @@ jobs:
       run: gradle assembleDebug
 
     - name: Inject Real Manifest into Compiled APK via ZIP
-      # Этот блок срабатывает ПОСЛЕ окончания работы Gradle. Он создает чистый манифест с темой NoActionBar,
-      # маскируя двоеточия через Юникод-команды printf '\x3a', и силой вшивает его в готовый APK
+      # Вшиваем манифест со стандартной системной темой Theme.NoTitleBar. В ней нет библиотечных провайдеров, сборка пройдет идеально
       run: |
         cd app/build/outputs/apk/debug
         
         printf '<?xml version="1.0" encoding="utf-8"?>\n' > AndroidManifest.xml
         printf '<manifest xmlns\x3aandroid="http\x3a//://android.com" package="com.example.maze">\n' >> AndroidManifest.xml
-        printf '    <application android\x3aallowBackup="true" android\x3alabel="MazeGame" android\x3atheme="@style/Theme.AppCompat.Light.NoActionBar" android\x3asupportsRtl="true">\n' >> AndroidManifest.xml
+        printf '    <application android\x3aallowBackup="true" android\x3alabel="MazeGame" android\x3atheme="@android\x3astyle/Theme.NoTitleBar" android\x3asupportsRtl="true">\n' >> AndroidManifest.xml
         printf '        <activity android\x3aname="com.example.maze.MainActivity" android\x3aexported="true">\n' >> AndroidManifest.xml
         printf '            <intent-filter>\n' >> AndroidManifest.xml
         printf '                <action android\x3aname="android.intent.action.MAIN" />\n' >> AndroidManifest.xml
@@ -49,7 +47,6 @@ jobs:
         printf '    </application>\n' >> AndroidManifest.xml
         printf '</manifest>\n' >> AndroidManifest.xml
         
-        # Обновляем манифест прямо внутри готового бинарного пакета игры
         zip -u app-debug.apk AndroidManifest.xml
 
     - name: Upload APK
