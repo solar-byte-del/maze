@@ -24,6 +24,8 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // Принудительно подключаем встроенный системный ключ подписи сервера к релизу для Android 16
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
