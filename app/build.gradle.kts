@@ -5,31 +5,20 @@ plugins {
 
 android {
     namespace = "com.example.maze"
-    // Поднимаем планку компиляции под стандарты Android 16
-    compileSdk = 35
+    // Оставляем compileSdk = 34, чтобы не вызывать предупреждений компилятора
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.maze"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
-        // ЖЕСТКАЯ НАСТРОЙКА 64-BIT: Объявляем смартфону iQOO, что код полностью 
+        // НАСТРОЙКА 64-BIT: Сообщаем смартфону iQOO, что код полностью 
         // оптимизирован под современные процессоры ARM64 для обхода "ошибки пакета"
         ndk {
             abiFilters.addAll(setOf("arm64-v8a"))
-        }
-    }
-
-    // СИСТЕМНЫЙ СЕРТИФИКАТ: Генерируем полноценные, доверенные ключи безопасности 
-    // прямо в процессе компиляции для прохождения верификации в Android 16
-    signingConfigs {
-        create("release") {
-            storeFile = file("debug.keystore")
-            storePassword = "androiddebug"
-            keyAlias = "androiddebugkey"
-            keyPassword = "androiddebug"
         }
     }
 
@@ -37,11 +26,10 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("release")
         }
         debug {
-            // Подключаем официальную подпись даже к отладочной версии!
-            signingConfig = signingConfigs.getByName("release")
+            // Переключаем на стандартную автоподпись Android, которая гарантированно есть на сервере
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
