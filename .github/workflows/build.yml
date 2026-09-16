@@ -23,7 +23,7 @@ jobs:
         gradle-version: 8.5
 
     - name: Create Fake Manifest for Build
-      # Создаем пустой макет для компилятора, ломать тут нечего
+      # Простейший плоский манифест без провайдеров и тем для гладкой компиляции ресурсов
       run: |
         mkdir -p src/main
         echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://android.com" package="com.example.maze"><application android:allowBackup="true" android:label="MazeGame"/></manifest>' > src/main/AndroidManifest.xml
@@ -32,14 +32,13 @@ jobs:
       run: gradle assembleDebug
 
     - name: Inject Real Manifest into Compiled APK via ZIP
-      # Этот блок срабатывает ПОСЛЕ сборки. Он внедряет чистый бинарный манифест прямо в готовый файл
+      # Вшиваем запускной манифест прямо в скомпилированный бинарник. Без тем оформления, так как тему мы прописали кодом!
       run: |
         cd build/outputs/apk/debug
         
-        # Создаем текстовый идеальный манифест
         echo '<?xml version="1.0" encoding="utf-8"?>' > AndroidManifest.xml
         echo '<manifest xmlns:android="http://android.com" package="com.example.maze">' >> AndroidManifest.xml
-        echo '    <application android:allowBackup="true" android:label="MazeGame" android:theme="@style/Theme.AppCompat.Light.NoActionBar" android:supportsRtl="true">' >> AndroidManifest.xml
+        echo '    <application android:allowBackup="true" android:label="MazeGame" android:supportsRtl="true">' >> AndroidManifest.xml
         echo '        <activity android:name="com.example.maze.MainActivity" android:exported="true">' >> AndroidManifest.xml
         echo '            <intent-filter>' >> AndroidManifest.xml
         echo '                <action android:name="android.intent.action.MAIN" />' >> AndroidManifest.xml
@@ -49,7 +48,6 @@ jobs:
         echo '    </application>' >> AndroidManifest.xml
         echo '</manifest>' >> AndroidManifest.xml
         
-        # Силовое обновление манифеста внутри скомпилированного APK-пакета
         zip -u app-debug.apk AndroidManifest.xml
 
     - name: Upload APK
