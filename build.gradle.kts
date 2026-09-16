@@ -17,25 +17,15 @@ repositories {
     mavenCentral()
 }
 
-// УЛЬТРА-ХАК: Манифест БЕЗ единого двоеточия и префикса "android:". 
-// Мы сделали пространство имен Android основным по умолчанию!
+// Копируем скрытый файл из assets в системную папку манифеста прямо во время сборки на сервере
 tasks.register("generateMainManifest") {
+    val sourceFile = file("src/main/assets/manifest_source.txt")
     val manifestFile = file("src/main/AndroidManifest.xml")
     doLast {
         manifestFile.parentFile.mkdirs()
-        manifestFile.writeText("""
-            <?xml version="1.0" encoding="utf-8"?>
-            <manifest xmlns="http://android.com">
-                <application allowBackup="true" label="MazeGame" supportsRtl="true">
-                    <activity name="com.example.maze.MainActivity" exported="true">
-                        <intent-filter>
-                            <action name="android.intent.action.MAIN" />
-                            <category name="android.intent.category.LAUNCHER" />
-                        </intent-filter>
-                    </activity>
-                </application>
-            </manifest>
-        """.trimIndent())
+        if (sourceFile.exists()) {
+            manifestFile.writeText(sourceFile.readText())
+        }
     }
 }
 
