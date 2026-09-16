@@ -9,13 +9,12 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.LinearLayout
-import androidx.appcompat.app.AppCompatActivity
 import java.util.Stack
 import kotlin.math.abs
 import kotlin.random.Random
 
-// --- МОДЕЛЬ ДАННЫХ И ЦВЕТА КВЕСТА ---
 enum class KeyColor(val label: String, val colorInt: Int) {
     RED("Красный", Color.rgb(239, 83, 80)),
     BLUE("Синий", Color.rgb(66, 165, 245)),
@@ -35,8 +34,7 @@ class MazeCell(val r: Int, val c: Int) {
     var doorColor: KeyColor? = null
 }
 
-// --- ГЛАВНАЯ АКТИВНОСТЬ (ТЕПЕРЬ НА БАЗЕ APPCOMPAT) ---
-class MainActivity : AppCompatActivity() {
+class MainActivity : android.app.Activity() {
     private lateinit var mainLayout: LinearLayout
     private var rows = 11
     private var cols = 11
@@ -45,6 +43,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gameView: MazeGameView
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Жестко отключаем заголовок ActionBar программно из кода до вызова супер-класса
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
         super.onCreate(savedInstanceState)
         
         mainLayout = LinearLayout(this).apply {
@@ -53,7 +53,6 @@ class MainActivity : AppCompatActivity() {
         }
         setContentView(mainLayout)
 
-        // Ждем полной инициализации окна, чтобы избежать NPE
         mainLayout.post {
             startNewGame()
         }
