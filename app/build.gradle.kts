@@ -32,7 +32,6 @@ android {
     }
 }
 
-// Убрали appcompat — теперь скрытые битые <provider> больше не сгенерируются
 dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
 }
