@@ -22,25 +22,11 @@ jobs:
       with:
         gradle-version: 8.5
 
-    - name: Create Fake Manifest for Build
-      # Пустой макет для компилятора, чтобы Gradle собрал код без ошибок
-      run: |
-        mkdir -p src/main
-        echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://android.com" package="com.example.maze"><application android:allowBackup="true" android:label="MazeGame"/></manifest>' > src/main/AndroidManifest.xml
-
     - name: Build with Gradle
       run: gradle assembleDebug
-
-    - name: Inject Precompiled Binary Manifest via Base64
-      # Этот блок декодирует НАСТОЯЩИЙ, скомпилированный на компьютере бинарный манифест (AXML)
-      # со всеми вшитыми двоеточиями, именами пакетов и MainActivity, и силой обновляет его в APK
-      run: |
-        cd build/outputs/apk/debug
-        echo "R0VYVgAAAADgAQAAHAAAAGgAAAAAAAAAbgAAAAAAAABjb20uZXhhbXBsZS5tYXplAAAAAAAATWF6ZUdhbWUAAGNvbS5leGFtcGxlLm1hemUuTWFpbkFjdGl2aXR5AGFuZHJvaWQuaW50ZW50LmFjdGlvbi5NQUlOAGFuZHJvaWQuaW50ZW50LmNhdGVnb3J5LkxBVU5DSEVSAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==" | base64 -d > AndroidManifest.xml
-        zip -u app-debug.apk AndroidManifest.xml
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
-        path: "**/build/outputs/apk/debug/app-debug.apk"
+        path: "**/build/outputs/apk/debug/*.apk"
