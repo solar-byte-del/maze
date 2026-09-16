@@ -14,7 +14,6 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        // ЖЕСТКАЯ НАСТРОЙКА 64-BIT: Оптимизация под современные процессоры iQOO
         ndk {
             abiFilters.addAll(setOf("arm64-v8a"))
         }
@@ -24,16 +23,17 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Принудительно подключаем встроенный системный ключ подписи сервера к релизу для Android 16
             signingConfig = signingConfigs.getByName("debug")
         }
     }
 
-    // ИНСТРУКЦИЯ LINT: Принудительно отключаем панику из-за пространства имен в макете
-    lint {
-        disable += "NamespaceTypo"
-        abortOnError = false
-        checkReleaseBuilds = false
+    // ВКЛЮЧАЕМ COMPOSE: Это заставит Android автоматически собрать идеальный бинарный манифест
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
 
     compileOptions {
@@ -48,4 +48,10 @@ android {
 
 dependencies {
     implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
+    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation(platform("androidx.compose:compose-bom:2024.04.01"))
+    implementation("androidx.compose.ui:compose-ui")
+    implementation("androidx.compose.ui:compose-ui-graphics")
+    implementation("androidx.compose.material3:material3")
 }
