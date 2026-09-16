@@ -10,6 +10,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import androidx.appcompat.app.AppCompatActivity
 import java.util.Stack
 import kotlin.math.abs
 import kotlin.random.Random
@@ -34,8 +35,8 @@ class MazeCell(val r: Int, val c: Int) {
     var doorColor: KeyColor? = null
 }
 
-// --- ГЛАВНАЯ АКТИВНОСТЬ ---
-class MainActivity : android.app.Activity() {
+// --- ГЛАВНАЯ АКТИВНОСТЬ (ТЕПЕРЬ НА БАЗЕ APPCOMPAT) ---
+class MainActivity : AppCompatActivity() {
     private lateinit var mainLayout: LinearLayout
     private var rows = 11
     private var cols = 11
@@ -52,7 +53,7 @@ class MainActivity : android.app.Activity() {
         }
         setContentView(mainLayout)
 
-        // ЗАЩИТА ОТ ВЫЛЕТА: Ждем, пока Android полностью подготовит окно приложения
+        // Ждем полной инициализации окна, чтобы избежать NPE
         mainLayout.post {
             startNewGame()
         }
@@ -83,8 +84,8 @@ class MainActivity : android.app.Activity() {
         val visited = Array(rows) { BooleanArray(cols) }
         val stack = Stack<Point>()
         
-        grid[0][0].isStart = true
-        visited[0][0] = true
+        grid.isStart = true
+        visited = true
         stack.push(Point(0, 0))
 
         while (!stack.isEmpty()) {
@@ -179,7 +180,6 @@ class MazeGameView(
 
             if (dr == -1 && !currCell.hasTopWall) canMove = true
             if (dr == 1 && !targetCell.hasTopWall) canMove = true
-            if (dc == -1 && !currentCell.hasLeftWall) canMove = true // Фикс потенциального бага
             if (dc == -1 && !currCell.hasLeftWall) canMove = true
             if (dc == 1 && !targetCell.hasLeftWall) canMove = true
 
@@ -254,4 +254,5 @@ class MazeGameView(
             }
         }
 
-canvas.drawLine(offsetX, offsetY + rows * cellSize, offsetX + cols * cellSize, offsetY + rows * cellSize, wallPaint)canvas.drawLine(offsetX + cols * cellSize, offsetY, offsetX + cols * cellSize, offsetY + rows * cellSize, wallPaint)val px = offsetX + player.c * cellSize + cellSize / 2val py = offsetY + player.r * cellSize + cellSize / 2canvas.drawCircle(px, py, cellSize / 3.5f, playerPaint)val h = height.toFloat()canvas.drawText("Ключей в кармане: ${inventory.size}", 40f, h - 240f, textPaint)if (isGameFinished) {val winPaint = Paint().apply { color = Color.YELLOW; textSize = 50f; fontWeight = FontWeight.BOLD }canvas.drawText("ПОБЕДА! 🏆", width / 2f - 120f, h - 240f, winPaint)}canvas.drawRect(20f, h - 180f, 220f, h - 40f, btnPaint)canvas.drawText("5 x 5", 65f, h - 95f, textPaint)canvas.drawRect(240f, h - 180f, 440f, h - 40f, btnPaint)canvas.drawText("15x15", 275f, h - 95f, textPaint)canvas.drawRect(460f, h - 180f, 660f, h - 40f, btnPaint)canvas.drawText("30x30", 495f, h - 95f, textPaint)if (isGameFinished) {val activeBtn = Paint().apply { color = Color.rgb(76, 175, 80) }canvas.drawRect(680f, h - 180f, width - 20f, h - 40f, activeBtn)canvas.drawText("ЗАНОВО", 700f, h - 95f, textPaint)}}}
+        canvas.drawLine(offsetX, offsetY + rows * cellSize, offsetX + cols * cellSize, offsetY + rows * cellSize, wallPaint)
+canvas.drawLine(offsetX + cols * cellSize, offsetY, offsetX + cols * cellSize, offsetY + rows * cellSize, wallPaint)val px = offsetX + player.c * cellSize + cellSize / 2val py = offsetY + player.r * cellSize + cellSize / 2canvas.drawCircle(px, py, cellSize / 3.5f, playerPaint)val h = height.toFloat()canvas.drawText("Ключей в кармане: ${inventory.size}", 40f, h - 240f, textPaint)if (isGameFinished) {val winPaint = Paint().apply { color = Color.YELLOW; textSize = 50f }canvas.drawText("ПОБЕДА! 🏆", width / 2f - 120f, h - 240f, winPaint)}canvas.drawRect(20f, h - 180f, 220f, h - 40f, btnPaint)canvas.drawText("5 x 5", 65f, h - 95f, textPaint)canvas.drawRect(240f, h - 180f, 440f, h - 40f, btnPaint)canvas.drawText("15x15", 275f, h - 95f, textPaint)canvas.drawRect(460f, h - 180f, 660f, h - 40f, btnPaint)canvas.drawText("30x30", 495f, h - 95f, textPaint)if (isGameFinished) {val activeBtn = Paint().apply { color = Color.rgb(76, 175, 80) }canvas.drawRect(680f, h - 180f, width - 20f, h - 40f, activeBtn)canvas.drawText("ЗАНОВО", 700f, h - 95f, textPaint)}}}
