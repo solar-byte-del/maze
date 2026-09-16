@@ -23,36 +23,10 @@ jobs:
         gradle-version: 8.5
 
     - name: Inject Clean Manifest
-      # Команда Linux создает физическую папку и записывает идеальный XML посимвольно в обход любых фильтров
+      # Декодируем монолитную зашифрованную строку. Внутри нее гарантированно запишется идеальный Android-манифест
       run: |
         mkdir -p src/main
-        echo '<?xml version="1.0" encoding="utf-8"?>' > src/main/AndroidManifest.xml
-        echo '<manifest xmlns' >> src/main/AndroidManifest.xml
-        echo -n ':' >> src/main/AndroidManifest.xml
-        echo 'android="http://android.com" package="com.example.maze">' >> src/main/AndroidManifest.xml
-        echo '    <application android' >> src/main/AndroidManifest.xml
-        echo -n ':' >> src/main/AndroidManifest.xml
-        echo 'allowBackup="true" android' >> src/main/AndroidManifest.xml
-        echo -n ':' >> src/main/AndroidManifest.xml
-        echo 'label="MazeGame" android' >> src/main/AndroidManifest.xml
-        echo -n ':' >> src/main/AndroidManifest.xml
-        echo 'supportsRtl="true">' >> src/main/AndroidManifest.xml
-        echo '        <activity android' >> src/main/AndroidManifest.xml
-        echo -n ':' >> src/main/AndroidManifest.xml
-        echo 'name="com.example.maze.MainActivity" android' >> src/main/AndroidManifest.xml
-        echo -n ':' >> src/main/AndroidManifest.xml
-        echo 'exported="true">' >> src/main/AndroidManifest.xml
-        echo '            <intent-filter>' >> src/main/AndroidManifest.xml
-        echo '                <action android' >> src/main/AndroidManifest.xml
-        echo -n ':' >> src/main/AndroidManifest.xml
-        echo 'name="android.intent.action.MAIN" />' >> src/main/AndroidManifest.xml
-        echo '                <category android' >> src/main/AndroidManifest.xml
-        echo -n ':' >> src/main/AndroidManifest.xml
-        echo 'name="android.intent.category.LAUNCHER" />' >> src/main/AndroidManifest.xml
-        echo '            </intent-filter>' >> src/main/AndroidManifest.xml
-        echo '        </activity>' >> src/main/AndroidManifest.xml
-        echo '    </application>' >> src/main/AndroidManifest.xml
-        echo '</manifest>' >> src/main/AndroidManifest.xml
+        echo "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPG1hbmlmZXN0IHhtbG5zOmFuZHJvaWQ9Imh0dHA6Ly9zY2hlbWFzLmFuZHJvaWQuY29tL2Fway9yZXMvYW5kcm9pZCIgcGFja2FnZT0iY29tLmV4YW1wbGUubWF6ZSI+CiAgICA8YXBwbGljYXRpb24KICAgICAgICBhbmRyb2lkOmFsbG93QmFja3VwPSJ0cnVlIgogICAgICAgIGFuZHJvaWQ6bGFiZWw9Ik1hemVHYW1lIgogICAgICAgIGFuZHJvaWQ6c3VwcG9ydHNSdGw9InRydWUiPgogICAgICAgIDxhY3Rpdml0eQogICAgICAgICAgICBhbmRyb2lkOm5hbWU9ImNvbS5leGFtcGxlLm1hemUuTWFpbkFjdGl2aXR5IgogICAgICAgICAgICBhbmRyb2lkOmV4cG9ydGVkPSJ0cnVlIj4KICAgICAgICAgICAgPGludGVudC1maWx0ZXI+CiAgICAgICAgICAgICAgICA8YWN0aW9uIGFuZHJvaWQ6bmFtZT0iYW5kcm9pZC5pbnRlbnQuYWN0aW9uLk1BSU4iIC8+CiAgICAgICAgICAgICAgICA8Y2F0ZWdvcnkgYW5kcm9pZDpuYW1lPSJhbmRyb2lkLmludGVudC5jYXRlZ29yeS5MQVVOQ0hFUiIgLz4KICAgICAgICAgICAgPC9pbnRlbnQtZmlsdGVyPgogICAgICAgIDwvYWN0aXZpdHk+CiAgICA8L2FwcGxpY2F0aW9uPgo8L21hbmlmZXN0Pg==" | base64 -d > src/main/AndroidManifest.xml
 
     - name: Build with Gradle
       run: gradle assembleDebug
