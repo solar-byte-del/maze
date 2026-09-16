@@ -22,46 +22,11 @@ jobs:
       with:
         gradle-version: 8.5
 
-    - name: Create Fake Manifest for Build
-      run: |
-        mkdir -p app/src/main
-        echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://android.com" package="com.example.maze"><application android:allowBackup="true" android:label="MazeGame"/></manifest>' > app/src/main/AndroidManifest.xml
-
     - name: Build with Gradle
       run: gradle assembleDebug
 
-    - name: Inject Real Manifest into Compiled APK via ZIP
-      run: |
-        cd app/build/outputs/apk/debug
-        
-        printf '<?xml version="1.0" encoding="utf-8"?>\n' > AndroidManifest.xml
-        printf '<manifest xmlns\x3aandroid="http\x3a//://android.com" package="com.example.maze">\n' >> AndroidManifest.xml
-        printf '    <application android\x3aallowBackup="true" android\x3alabel="MazeGame" android\x3atheme="@android\x3astyle/Theme.NoTitleBar" android\x3asupportsRtl="true">\n' >> AndroidManifest.xml
-        printf '        <activity android\x3aname="com.example.maze.MainActivity" android\x3aexported="true">\n' >> AndroidManifest.xml
-        printf '            <intent-filter>\n' >> AndroidManifest.xml
-        printf '                <action android\x3aname="android.intent.action.MAIN" />\n' >> AndroidManifest.xml
-        printf '                <category android\x3aname="android.intent.category.LAUNCHER" />\n' >> AndroidManifest.xml
-        printf '            </intent-filter>\n' >> AndroidManifest.xml
-        printf '        </activity>\n' >> AndroidManifest.xml
-        printf '    </application>\n' >> AndroidManifest.xml
-        printf '</manifest>\n' >> AndroidManifest.xml
-        
-        zip -u app-debug.apk AndroidManifest.xml
-
-    - name: Sign APK for Android 16 Compatibility
-      # Автоматический поиск точного адреса apksigner в недрах установленного Android SDK
-      run: |
-        cd app/build/outputs/apk/debug
-        keytool -genkey -v -keystore debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
-        
-        # Находим самый свежий apksigner в системе сборки
-        APKSIGNER_PATH=$(find /usr/local/lib/android/sdk/build-tools/ -name apksigner | sort -V | tail -n 1)
-        
-        # Подписываем игру
-        $APKSIGNER_PATH sign --ks debug.keystore --ks-pass pass:android --out maze-game-signed.apk app-debug.apk
-
-    - name: Upload Signed APK
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: maze-game
-        path: app/build/outputs/apk/debug/maze-game-signed.apk
+        name: app-debug
+        path: "**/build/outputs/apk/debug/*.apk"
