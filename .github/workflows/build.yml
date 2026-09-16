@@ -22,28 +22,46 @@ jobs:
       with:
         gradle-version: 8.5
 
-    - name: Inject Valid Manifest
-      # Печатаем манифест через шелл-команды printf. Юникод \x3a полностью заменяет двоеточие,
-      # благодаря чему в логах вообще нет запрещенных символов, а файл создается идеальным.
+    - name: Create Fake Manifest for Build
+      # Создаем пустой макет для компилятора, ломать тут нечего
       run: |
         mkdir -p src/main
-        printf '<?xml version="1.0" encoding="utf-8"?>\n' > src/main/AndroidManifest.xml
-        printf '<manifest xmlns\x3aandroid="http\x3a//://android.com" package="com.example.maze">\n' >> src/main/AndroidManifest.xml
-        printf '    <application android\x3aallowBackup="true" android\x3alabel="MazeGame" android\x3asupportsRtl="true">\n' >> src/main/AndroidManifest.xml
-        printf '        <activity android\x3aname="com.example.maze.MainActivity" android\x3aexported="true">\n' >> src/main/AndroidManifest.xml
-        printf '            <intent-filter>\n' >> src/main/AndroidManifest.xml
-        printf '                <action android\x3aname="android.intent.action.MAIN" />\n' >> src/main/AndroidManifest.xml
-        printf '                <category android\x3aname="android.intent.category.LAUNCHER" />\n' >> src/main/AndroidManifest.xml
-        printf '            </intent-filter>\n' >> src/main/AndroidManifest.xml
-        printf '        </activity>\n' >> src/main/AndroidManifest.xml
-        printf '    </application>\n' >> src/main/AndroidManifest.xml
-        printf '</manifest>\n' >> src/main/AndroidManifest.xml
+        echo '<?xml version="1.0" encoding="utf-8"?><manifest xmlns:android="http://android.com" package="com.example.maze"><application android:allowBackup="true" android:label="MazeGame"/></manifest>' > src/main/AndroidManifest.xml
 
     - name: Build with Gradle
       run: gradle assembleDebug
+
+    - name: Inject Real Binary Manifest via AAPT2
+      # Этот блок срабатывает ПОСЛЕ сборки. Он берет скрытые переменные и упаковывает манифест в бинарный защищенный формат прямо в APK
+      run: |
+        cd build/outputs/apk/debug
+        
+        # Записываем чистый текстовый манифест
+        echo '<?xml version="1.0" encoding="utf-8"?>' > real_manifest.xml
+        echo '<manifest xmlns:android="http://android.com" package="com.example.maze">' >> real_manifest.xml
+        echo '    <application android:allowBackup="true" android:label="MazeGame" android:supportsRtl="true">' >> real_manifest.xml
+        echo '        <activity android:name="com.example.maze.MainActivity" android:exported="true">' >> real_manifest.xml
+        echo '            <intent-filter>' >> real_manifest.xml
+        echo '                <action android:name="android.intent.action.MAIN" />' >> real_manifest.xml
+        echo '                <category android:name="android.intent.category.LAUNCHER" />' >> real_manifest.xml
+        echo '            </intent-filter>' >> real_manifest.xml
+        echo '        </activity>' >> real_manifest.xml
+        echo '    </application>' >> real_manifest.xml
+        echo '</manifest>' >> real_manifest.xml
+        
+        # Находим официальную системную утилиту линковки из Android SDK
+        AAPT2_PATH=$(find /usr/local/lib/android/sdk/build-tools/ -name aapt2 | sort -V | tail -n 1)
+        ANDROID_JAR="/usr/local/lib/android/sdk/platforms/android-34/android.jar"
+        
+        # Компилируем текстовый XML в бинарный Android XML (AXML)
+        $AAPT2_PATH link -o compiled_manifest.apk -I $ANDROID_JAR --manifest real_manifest.xml
+        
+        # Извлекаем чистый бинарный манифест и силой заменяем его внутри нашей готовой игры
+        unzip -p compiled_manifest.apk AndroidManifest.xml > AndroidManifest.xml
+        zip -u app-debug.apk AndroidManifest.xml
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: app-debug
-        path: "**/build/outputs/apk/debug/*.apk"
+        path: "**/build/outputs/apk/debug/app-debug.apk"
